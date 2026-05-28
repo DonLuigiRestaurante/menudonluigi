@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Don Luigi — Menú</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff;
+    --bg2: #f7f7f7;
+    --bg3: #f0f0f0;
+    --surface: #ffffff;
+    --border: #e0e0e0;
+    --border-light: #eeeeee;
+    --text: #1a1a1a;
+    --text-mid: #666666;
+    --text-faint: #aaaaaa;
+    --green: #009246;
+    --red: #ce2b37;
+    --white: #ffffff;
+    --gold: #9a6e28;
+    /* header stays dark */
+    --header-bg: #111111;
+    --header-border: #333333;
+    --header-text: #f0ece4;
+    --header-text-faint: rgba(255,255,255,0.4);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Lato', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: var(--header-bg);
+    text-align: center;
+    padding: 2.5rem 1.5rem 2rem;
+    border-bottom: 1px solid var(--header-border);
+    position: relative;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green) 33.33%, var(--white) 33.33%, var(--white) 66.66%, var(--red) 66.66%);
+  }
+  .logo-img {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    border-radius: 50%;
+    margin-bottom: 0.5rem;
+  }
+  .header-edit-hint { display: none; font-size: 11px; color: var(--header-text-faint); margin-top: 6px; }
+  body.editing .header-edit-hint { display: block; }
+  #h-tagline { color: var(--header-text-faint); font-size: 12px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; }
+
+  /* ── NAV ── */
+  .nav-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .nav-bar::-webkit-scrollbar { display: none; }
+  .nav-inner { display: flex; min-width: max-content; padding: 0 1rem; }
+  .nav-tab {
+    font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-mid); padding: 13px 15px;
+    border: none; background: none; cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap; text-decoration: none; display: inline-block;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* ── DAILY BANNER ── */
+  .daily-banner {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    text-align: center; padding: 1rem 2rem;
+  }
+  .daily-banner .label {
+    font-size: 9px; font-weight: 700; letter-spacing: 4px;
+    text-transform: uppercase; color: var(--red); margin-bottom: 5px;
+  }
+  .daily-banner .text {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: 1rem; color: var(--text-mid);
+  }
+
+  /* ── CONTENT ── */
+  .content { max-width: 760px; margin: 0 auto; padding: 1.5rem 1.25rem 6rem; }
+
+  /* ── SECTION ── */
+  .menu-section { padding-top: 2rem; }
+  .section-heading {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.25rem; cursor: pointer; user-select: none;
+  }
+  .section-heading:hover .section-title { color: var(--red); }
+  .section-title {
+    font-family: 'Playfair Display', serif; font-size: 1.4rem;
+    font-weight: 600; color: var(--text); transition: color 0.2s; white-space: nowrap;
+  }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+  .section-chevron { width: 18px; height: 18px; color: var(--text-faint); transition: transform 0.3s; flex-shrink: 0; }
+  .section-chevron.open { transform: rotate(180deg); }
+  .section-body { overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease; opacity: 1; }
+  .section-body.collapsed { opacity: 0; max-height: 0 !important; }
+  .subsection-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--red);
+    margin: 1.5rem 0 0.5rem; padding-bottom: 4px;
+    border-bottom: 1px solid #f5d5d8;
+  }
+
+  /* ── MENU ITEM ── */
+  .menu-item {
+    display: flex; align-items: center;
+    padding: 9px 0; border-bottom: 1px solid var(--border-light);
+  }
+  .menu-item:last-child { border-bottom: none; }
+
+  .item-photo-wrapper { position: relative; margin-right: 10px; flex-shrink: 0; }
+  .item-photo {
+    width: 54px; height: 54px; border-radius: 8px;
+    object-fit: cover; border: 1px solid var(--border);
+  }
+  .item-photo-placeholder {
+    width: 54px; height: 54px; border-radius: 8px;
+    background: var(--bg2); border: 1.5px dashed var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .item-photo-placeholder:hover { border-color: var(--red); background: #fff5f5; }
+  .item-photo-placeholder:hover svg { color: var(--red); }
+  .item-photo-placeholder svg { color: var(--text-faint); transition: color 0.2s; }
+  .remove-photo {
+    display: none; position: absolute; top: -6px; right: -6px;
+    width: 18px; height: 18px; background: var(--red); color: #fff;
+    border-radius: 50%; border: none; cursor: pointer;
+    font-size: 12px; line-height: 18px; text-align: center;
+  }
+  .item-photo-wrapper:hover .remove-photo { display: block; }
+
+  .item-text { display: flex; align-items: baseline; flex: 1; min-width: 0; }
+  .item-name { font-size: 14px; font-weight: 400; color: var(--text); white-space: nowrap; flex-shrink: 0; }
+  .item-dots { flex: 1; overflow: hidden; font-size: 12px; color: var(--text-faint); letter-spacing: 1px; padding: 0 3px; white-space: nowrap; }
+  .item-price { font-size: 14px; font-weight: 700; color: var(--red); white-space: nowrap; flex-shrink: 0; min-width: 70px; text-align: right; }
+  .menu-item.recargo .item-name { font-size: 12.5px; color: var(--text-mid); font-style: italic; }
+  .menu-item.recargo .item-price { font-size: 12.5px; color: var(--text-mid); font-style: italic; font-weight: 400; }
+  .menu-item.recargo .item-photo-placeholder { display: none; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--header-bg); border-top: 1px solid var(--header-border);
+    text-align: center; padding: 2rem 1.5rem;
+    font-size: 12px; letter-spacing: 2px; color: rgba(255,255,255,0.3);
+    position: relative;
+  }
+  footer::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green) 33.33%, var(--white) 33.33%, var(--white) 66.66%, var(--red) 66.66%);
+  }
+
+  /* ── FAB ── */
+  .edit-fab {
+    position: fixed; bottom: 24px; right: 24px; z-index: 200;
+    background: #1a1a1a; color: #fff; border: none;
+    border-radius: 50px; padding: 12px 20px;
+    font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    display: flex; align-items: center; gap: 8px;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .edit-fab:hover { background: #333; transform: scale(1.03); }
+  .edit-fab.active { background: var(--red); color: #fff; }
+
+  /* ── EDIT BAR ── */
+  .edit-bar-top {
+    display: none; background: var(--red); color: #fff;
+    text-align: center; padding: 9px 1rem;
+    font-size: 12px; font-weight: 700; letter-spacing: 1px;
+    position: sticky; top: 46px; z-index: 99;
+  }
+  .edit-bar-top.visible { display: block; }
+
+  /* ── MODAL ── */
+  .edit-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 300;
+    align-items: center; justify-content: center; padding: 1rem;
+  }
+  .edit-overlay.visible { display: flex; }
+  .edit-modal {
+    background: #ffffff; border: 1px solid var(--border);
+    border-radius: 14px; padding: 2rem; width: 340px; max-width: 100%;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+  }
+  .edit-modal h3 {
+    font-family: 'Playfair Display', serif; font-size: 1.2rem;
+    color: #1a1a1a; margin-bottom: 6px; text-align: center;
+  }
+  .edit-modal .modal-sub { font-size: 13px; color: #666; margin-bottom: 1.25rem; text-align: center; }
+  .edit-modal input {
+    width: 100%; padding: 10px 14px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    background: #f7f7f7; color: #1a1a1a;
+    font-size: 16px; font-family: 'Lato', sans-serif;
+    text-align: center; letter-spacing: 4px;
+    margin-bottom: 0.5rem; outline: none;
+    transition: border-color 0.2s;
+  }
+  .edit-modal input:focus { border-color: var(--red); }
+  .edit-modal input.error { border-color: var(--red); }
+  .modal-btns { display: flex; gap: 10px; margin-top: 1rem; }
+  .btn-cancel {
+    flex: 1; padding: 10px; border: 1px solid var(--border);
+    background: none; border-radius: 8px; cursor: pointer;
+    font-family: 'Lato', sans-serif; font-size: 14px; color: var(--text-mid);
+  }
+  .btn-enter {
+    flex: 2; padding: 10px; background: var(--red); color: #fff;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-family: 'Lato', sans-serif; font-size: 14px; font-weight: 700;
+  }
+  .btn-enter:hover { background: #a82230; }
+  .error-msg { color: var(--red); font-size: 12px; margin-bottom: 4px; display: none; text-align: center; }
+  .error-msg.visible { display: block; }
+  .change-pwd-link { font-size: 12px; color: var(--gold); text-align: center; display: block; margin-top: 12px; cursor: pointer; text-decoration: underline; }
+
+  /* ── EDITING HIGHLIGHTS ── */
+  body.editing .item-name,
+  body.editing .item-price { cursor: text; border-bottom: 1px dashed var(--red); }
+  body.editing .item-name:focus,
+  body.editing .item-price:focus { outline: none; background: #fff5f5; border-radius: 3px; }
+  body.editing #h-tagline,
+  body.editing .daily-banner .text { cursor: text; border-bottom: 1px dashed rgba(255,255,255,0.4); }
+  body.editing #h-tagline:focus,
+  body.editing .daily-banner .text:focus { outline: none; background: rgba(255,255,255,0.08); border-radius: 3px; }
+  body.editing .item-photo-placeholder { display: flex; }
+  .change-pwd-link { font-size: 12px; color: var(--red); text-align: center; display: block; margin-top: 12px; cursor: pointer; text-decoration: underline; }
+
+  @media (max-width: 480px) {
+    .item-name, .item-price { font-size: 13px; }
+    .nav-tab { font-size: 10px; padding: 12px 10px; }
+    .item-photo, .item-photo-placeholder { width: 46px; height: 46px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="edit-overlay" id="edit-overlay">
+  <div class="edit-modal">
+    <h3 id="modal-title">Modo edición</h3>
+    <p class="modal-sub" id="modal-sub">Ingresá la contraseña para editar el menú</p>
+    <input type="password" id="pwd-input" placeholder="••••••" maxlength="30" onkeydown="if(event.key==='Enter') checkPwd()" />
+    <div class="error-msg" id="error-msg">Contraseña incorrecta</div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-enter" id="modal-btn" onclick="checkPwd()">Ingresar</button>
+    </div>
+    <span class="change-pwd-link" onclick="showChangePwd()">Cambiar contraseña</span>
+  </div>
+</div>
+
+<div class="edit-bar-top" id="edit-bar-top">
+  ✏️ MODO EDICIÓN — tocá cualquier texto para editar · 📷 para agregar foto
+</div>
+
+<button class="edit-fab" id="edit-fab" onclick="handleFab()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  <span id="fab-label">Editar</span>
+</button>
+
+<header class="site-header">
+  <img class="logo-img" src="data:image/png;base64,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" alt="Don Luigi">
+  <div class="tagline" id="h-tagline">comida casera</div>
+  <div class="header-edit-hint">← tocá el texto para editar</div>
+</header>
+
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <a class="nav-tab active" href="#entradas">Entradas</a>
+    <a class="nav-tab" href="#minutas">Minutas</a>
+    <a class="nav-tab" href="#pastas">Pastas</a>
+    <a class="nav-tab" href="#ensaladas">Ensaladas</a>
+    <a class="nav-tab" href="#guarniciones">Guarniciones</a>
+    <a class="nav-tab" href="#sandwiches">Sándwiches</a>
+    <a class="nav-tab" href="#postres">Postres</a>
+    <a class="nav-tab" href="#helados">Helados</a>
+    <a class="nav-tab" href="#cafeteria">Cafetería</a>
+    <a class="nav-tab" href="#bebidas">Bebidas</a>
+    <a class="nav-tab" href="#vinos">Vinos</a>
+  </div>
+</nav>
+
+<div class="daily-banner">
+  <div class="label">✦ Platos del día ✦</div>
+  <div class="text" id="daily-text">Consultanos las opciones de hoy</div>
+</div>
+
+<main class="content" id="menu-main"></main>
+
+<footer>
+  <p>Gracias por su visita &nbsp;·&nbsp; Don Luigi</p>
+</footer>
+
+<script>
+let EDIT_PASSWORD = localStorage.getItem('menu_pwd') || 'menu1234';
+
+const DEFAULT_MENU = [
+  { id:'entradas', title:'Entradas', items:[
+    {id:'e1',name:'Matambre con rusa',price:'$ —'},
+    {id:'e2',name:'Lengua a la vinagreta',price:'$ —'},
+    {id:'e3',name:'Tomates rellenos',price:'$ —'},
+    {id:'e4',name:'Salpicón de ave',price:'$ —'},
+    {id:'e5',name:'Empanadas',price:'$ —'},
+    {id:'e6',name:'Tarta de verdura',price:'$ —'},
+  ]},
+  { id:'minutas', title:'Minutas', items:[
+    {id:'m1',name:'Milanesa c/ fritas',price:'$ —'},
+    {id:'m2',name:'Napolitana c/ fritas',price:'$ —'},
+    {id:'m3',name:'Suprema de pollo c/ fritas',price:'$ —'},
+    {id:'m4',name:'Suprema napolitana c/ fritas',price:'$ —'},
+    {id:'m5',name:'Filet de merluza con puré',price:'$ —'},
+    {id:'m6',name:'Bife de costilla / lomo c/ fritas o ens. mixta',price:'$ —'},
+    {id:'m7',name:'Peceto al horno c/ papas',price:'$ —'},
+    {id:'m8',name:'Pechuga de pollo a la plancha c/ puré',price:'$ —'},
+    {id:'ms1',subsection:'Guarniciones extras'},
+    {id:'m9',name:'Fritas, puré, rusa, ens. mixta, papas al horno',price:'$ —',recargo:true},
+    {id:'m10',name:'Recargo con ensalada completa',price:'$ —',recargo:true},
+    {id:'m11',name:'Recargo con puré mixto',price:'$ —',recargo:true},
+    {id:'m12',name:'Recargo con puré de zapallo',price:'$ —',recargo:true},
+  ]},
+  { id:'pastas', title:'Pastas caseras', items:[
+    {id:'p1',name:'Fideos blancos',price:'$ —'},
+    {id:'p2',name:'Raviolones (verdura, carne y ricota)',price:'$ —'},
+    {id:'p3',name:'Canelones (verdura y pollo)',price:'$ —'},
+    {id:'p4',name:'Ñoquis de papa',price:'$ —'},
+    {id:'p5',name:'Fideos verdes (de espinaca)',price:'$ —'},
+    {id:'p6',name:'Sorrentinos blancos (ricota, jamón y muzzarella)',price:'$ —'},
+    {id:'p7',name:'Sorrentinos verdes (zapallo, ricota y muzzarella)',price:'$ —'},
+    {id:'ps1',subsection:'Salsas'},
+    {id:'p8',name:'Con tuco',price:'$ —',recargo:true},
+    {id:'p9',name:'Con estofado o bolognesa',price:'$ —',recargo:true},
+    {id:'p10',name:'Con salsa mixta',price:'$ —',recargo:true},
+    {id:'p11',name:'Con 4 quesos',price:'$ —',recargo:true},
+    {id:'p12',name:'Recargo de estofado',price:'$ —',recargo:true},
+    {id:'p13',name:'Recargo de queso',price:'$ —',recargo:true},
+  ]},
+  { id:'ensaladas', title:'Ensaladas', items:[
+    {id:'en1',name:'De lechuga',price:'$ —'},
+    {id:'en2',name:'De tomate',price:'$ —'},
+    {id:'en3',name:'Mixta',price:'$ —'},
+    {id:'en4',name:'De zanahoria',price:'$ —'},
+    {id:'en5',name:'De remolacha',price:'$ —'},
+    {id:'en6',name:'De papa y huevo',price:'$ —'},
+    {id:'en7',name:'Completa',price:'$ —'},
+    {id:'en8',name:'Tomate al medio',price:'$ —'},
+    {id:'en9',name:'Recargo con huevo',price:'$ —',recargo:true},
+  ]},
+  { id:'guarniciones', title:'Guarniciones', items:[
+    {id:'g1',name:'Papas fritas',price:'$ —'},
+    {id:'g2',name:'Papas fritas a la provenzal',price:'$ —'},
+    {id:'g3',name:'Puré de papas',price:'$ —'},
+    {id:'g4',name:'Ensalada rusa',price:'$ —'},
+    {id:'g5',name:'Tortilla de papas',price:'$ —'},
+    {id:'g6',name:'Tortilla de papas c/ cebolla',price:'$ —'},
+    {id:'g7',name:'Tortilla a la española',price:'$ —'},
+    {id:'g8',name:'Huevos fritos (c/u)',price:'$ —'},
+    {id:'g9',name:'Huevos duros (c/u)',price:'$ —'},
+    {id:'g10',name:'Omelette de jamón y queso',price:'$ —'},
+  ]},
+  { id:'sandwiches', title:'Sándwiches', items:[
+    {id:'s1',name:'De milanesa simple',price:'$ —'},
+    {id:'s2',name:'De milanesa completo (lechuga y tomate)',price:'$ —'},
+    {id:'s3',name:'De milanesa con jamón y queso',price:'$ —'},
+    {id:'s4',name:'Completo con jamón y queso',price:'$ —'},
+    {id:'s5',name:'Supercompleto (lechuga, tomate, jamón, queso y huevo)',price:'$ —'},
+    {id:'s6',name:'De matambre casero',price:'$ —'},
+    {id:'s7',name:'Recargo con huevo',price:'$ —',recargo:true},
+  ]},
+  { id:'postres', title:'Postres', items:[
+    {id:'po1',name:'Flan casero',price:'$ —'},
+    {id:'po2',name:'Budín de pan',price:'$ —'},
+    {id:'po3',name:'Queso y dulce',price:'$ —'},
+    {id:'po4',name:'Tiramisú',price:'$ —'},
+    {id:'po5',name:'Recargo con dulce de leche o crema',price:'$ —',recargo:true},
+    {id:'po6',name:'Recargo mixto',price:'$ —',recargo:true},
+  ]},
+  { id:'helados', title:'Helados', items:[
+    {id:'h1',name:'Almendras',price:'$ —'},
+    {id:'h2',name:'Tricolor',price:'$ —'},
+    {id:'h3',name:'Bombón helado',price:'$ —'},
+  ]},
+  { id:'cafeteria', title:'Cafetería', items:[
+    {id:'c1',name:'Café',price:'$ —'},
+    {id:'c2',name:'Cortado',price:'$ —'},
+    {id:'c3',name:'Café con crema',price:'$ —'},
+    {id:'c4',name:'Lágrima',price:'$ —'},
+    {id:'c5',name:'Café doble',price:'$ —'},
+    {id:'c6',name:'Té',price:'$ —'},
+    {id:'c7',name:'Té digestivo',price:'$ —'},
+    {id:'c8',name:'Café con leche',price:'$ —'},
+  ]},
+  { id:'bebidas', title:'Bebidas', items:[
+    {id:'b1',name:'Gaseosa 500cc',price:'$ —'},
+    {id:'b2',name:'Coca-Cola 1L (vidrio)',price:'$ —'},
+    {id:'b3',name:'Coca-Cola 1,5L',price:'$ —'},
+    {id:'b4',name:'Seven Up 1,5L',price:'$ —'},
+    {id:'b5',name:'Aquarius 500cc',price:'$ —'},
+    {id:'b6',name:'Aquarius 1,5L',price:'$ —'},
+    {id:'b7',name:'Agua mineral 500cc',price:'$ —'},
+    {id:'b8',name:'Agua mineral 1,5L',price:'$ —'},
+    {id:'b9',name:'Soda 1/2L',price:'$ —'},
+    {id:'b10',name:'Soda 1L',price:'$ —'},
+    {id:'b11',name:'Brahma 1L',price:'$ —'},
+    {id:'b12',name:'Stella Artois 1L',price:'$ —'},
+    {id:'b13',name:'Cerveza lata 473cc',price:'$ —'},
+  ]},
+  { id:'vinos', title:'Vinos', items:[
+    {id:'v1',name:'Finca Las Moras Malbec',price:'$ —'},
+    {id:'v2',name:'Benjamín Malbec',price:'$ —'},
+    {id:'v3',name:'López Malbec',price:'$ —'},
+    {id:'v4',name:'Portillo Malbec',price:'$ —'},
+    {id:'v5',name:'Alma Mora Malbec',price:'$ —'},
+    {id:'v6',name:'Nieto Senetiner Malbec D.O.C.',price:'$ —'},
+    {id:'v7',name:'Marló Blanco dulce',price:'$ —'},
+    {id:'v8',name:'López Sauvignon Blanc',price:'$ —'},
+    {id:'v9',name:'Nieto Senetiner Brut Nature',price:'$ —'},
+    {id:'vs1',subsection:'Por medida'},
+    {id:'v10',name:'1/4 vino',price:'$ —',recargo:true},
+    {id:'v11',name:'1/2 vino',price:'$ —',recargo:true},
+  ]},
+];
+
+function loadData(){
+  try{ const s=localStorage.getItem('menu_data'); return s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_MENU)); }
+  catch(e){ return JSON.parse(JSON.stringify(DEFAULT_MENU)); }
+}
+
+let menuData = loadData();
+
+function saveData(){
+  // sync from DOM
+  document.querySelectorAll('.menu-item').forEach(row=>{
+    const id=row.dataset.itemid;
+    const nameEl=row.querySelector('.item-name');
+    const priceEl=row.querySelector('.item-price');
+    menuData.forEach(sec=>sec.items.forEach(it=>{
+      if(it.id===id){
+        if(nameEl) it.name=nameEl.textContent;
+        if(priceEl) it.price=priceEl.textContent;
+      }
+    }));
+  });
+  document.querySelectorAll('.menu-section').forEach(sec=>{
+    const titleEl=sec.querySelector('.section-title');
+    const found=menuData.find(s=>s.id===sec.id);
+    if(found&&titleEl) found.title=titleEl.textContent;
+  });
+  localStorage.setItem('menu_tagline', document.getElementById('h-tagline').textContent);
+  localStorage.setItem('menu_daily', document.getElementById('daily-text').textContent);
+  localStorage.setItem('menu_data', JSON.stringify(menuData));
+}
+
+function renderMenu(){
+  const main=document.getElementById('menu-main');
+  main.innerHTML='';
+  menuData.forEach(section=>{
+    const sec=document.createElement('section');
+    sec.className='menu-section'; sec.id=section.id;
+    sec.innerHTML=`<div class="section-heading" onclick="toggleSection(this)">
+      <h2 class="section-title">${section.title}</h2>
+      <div class="section-line"></div>
+      <svg class="section-chevron open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </div><div class="section-body"></div>`;
+    const body=sec.querySelector('.section-body');
+    section.items.forEach(item=>{
+      if(item.subsection){
+        const sub=document.createElement('div');
+        sub.className='subsection-label'; sub.textContent=item.subsection;
+        body.appendChild(sub); return;
+      }
+      const row=document.createElement('div');
+      row.className='menu-item'+(item.recargo?' recargo':'');
+      row.dataset.itemid=item.id;
+      if(!item.recargo){
+        const pw=document.createElement('div');
+        pw.className='item-photo-wrapper';
+        if(item.photo){
+          pw.innerHTML=`<img class="item-photo" src="${item.photo}" alt="${item.name}"><button class="remove-photo" onclick="removePhoto('${item.id}',event)">×</button>`;
+        } else {
+          pw.innerHTML=`<div class="item-photo-placeholder" onclick="triggerPhoto('${item.id}')" title="Agregar foto"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`;
+        }
+        row.appendChild(pw);
+      }
+      const td=document.createElement('div');
+      td.className='item-text';
+      td.innerHTML=`<span class="item-name">${item.name}</span><span class="item-dots">............................................................................................................................</span><span class="item-price">${item.price}</span>`;
+      row.appendChild(td);
+      body.appendChild(row);
+    });
+    main.appendChild(sec);
+    body.style.maxHeight=body.scrollHeight+'px';
+  });
+  const st=localStorage.getItem('menu_tagline');
+  const sd=localStorage.getItem('menu_daily');
+  if(st) document.getElementById('h-tagline').textContent=st;
+  if(sd) document.getElementById('daily-text').textContent=sd;
+  initNav();
+}
+
+// Photo
+let photoTargetId=null;
+const fileInput=document.createElement('input');
+fileInput.type='file'; fileInput.accept='image/*'; fileInput.style.display='none';
+document.body.appendChild(fileInput);
+fileInput.addEventListener('change',function(){
+  if(!this.files[0]||!photoTargetId) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    menuData.forEach(sec=>sec.items.forEach(it=>{ if(it.id===photoTargetId) it.photo=e.target.result; }));
+    saveData(); renderMenu(); if(editMode) enableEdit();
+  };
+  reader.readAsDataURL(this.files[0]);
+});
+function triggerPhoto(id){ if(!editMode) return; photoTargetId=id; fileInput.click(); }
+function removePhoto(id,e){
+  e.stopPropagation();
+  menuData.forEach(sec=>sec.items.forEach(it=>{ if(it.id===id) it.photo=null; }));
+  saveData(); renderMenu(); if(editMode) enableEdit();
+}
+
+// Section toggle
+function toggleSection(heading){
+  if(editMode) return;
+  const body=heading.nextElementSibling;
+  const chev=heading.querySelector('.section-chevron');
+  if(body.classList.contains('collapsed')){
+    body.classList.remove('collapsed'); body.style.maxHeight=body.scrollHeight+'px'; chev.classList.add('open');
+  } else {
+    body.style.maxHeight=body.scrollHeight+'px';
+    requestAnimationFrame(()=>{ body.classList.add('collapsed'); chev.classList.remove('open'); });
+  }
+}
+
+// Nav
+function initNav(){
+  const tabs=document.querySelectorAll('.nav-tab');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        const id=entry.target.id;
+        tabs.forEach(t=>t.classList.remove('active'));
+        const a=document.querySelector(`.nav-tab[href="#${id}"]`);
+        if(a){ a.classList.add('active'); a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'}); }
+      }
+    });
+  },{rootMargin:'-40% 0px -55% 0px'});
+  document.querySelectorAll('.menu-section').forEach(s=>obs.observe(s));
+}
+
+// Edit
+let editMode=false, changingPwd=false, changePwdStep=0;
+
+function handleFab(){
+  if(!editMode){
+    changingPwd=false;
+    document.getElementById('modal-title').textContent='Modo edición';
+    document.getElementById('modal-sub').textContent='Ingresá la contraseña para editar el menú';
+    document.getElementById('modal-btn').textContent='Ingresar';
+    document.querySelector('.change-pwd-link').style.display='';
+    document.getElementById('pwd-input').type='password';
+    document.getElementById('pwd-input').style.letterSpacing='4px';
+    document.getElementById('pwd-input').placeholder='••••••';
+    document.getElementById('edit-overlay').classList.add('visible');
+    setTimeout(()=>document.getElementById('pwd-input').focus(),100);
+  } else { exitEdit(); }
+}
+
+function closeModal(){
+  document.getElementById('edit-overlay').classList.remove('visible');
+  document.getElementById('pwd-input').value='';
+  document.getElementById('error-msg').classList.remove('visible');
+  document.getElementById('pwd-input').classList.remove('error');
+  changePwdStep=0;
+}
+
+function checkPwd(){
+  if(changingPwd){ doChangePwd(); return; }
+  const val=document.getElementById('pwd-input').value;
+  if(val===EDIT_PASSWORD){ closeModal(); enterEdit(); }
+  else {
+    document.getElementById('pwd-input').classList.add('error');
+    document.getElementById('error-msg').classList.add('visible');
+    document.getElementById('error-msg').textContent='Contraseña incorrecta';
+    document.getElementById('pwd-input').value='';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+function showChangePwd(){
+  changingPwd=true; changePwdStep=0;
+  document.getElementById('modal-title').textContent='Cambiar contraseña';
+  document.getElementById('modal-sub').textContent='Ingresá la contraseña actual';
+  document.getElementById('modal-btn').textContent='Siguiente';
+  document.querySelector('.change-pwd-link').style.display='none';
+  document.getElementById('pwd-input').type='text';
+  document.getElementById('pwd-input').style.letterSpacing='2px';
+  document.getElementById('pwd-input').placeholder='contraseña actual';
+  document.getElementById('pwd-input').value='';
+  document.getElementById('error-msg').classList.remove('visible');
+  document.getElementById('pwd-input').classList.remove('error');
+  document.getElementById('pwd-input').focus();
+}
+
+function doChangePwd(){
+  const val=document.getElementById('pwd-input').value.trim();
+  if(changePwdStep===0){
+    if(val!==EDIT_PASSWORD){
+      document.getElementById('pwd-input').classList.add('error');
+      document.getElementById('error-msg').textContent='Contraseña actual incorrecta';
+      document.getElementById('error-msg').classList.add('visible');
+      document.getElementById('pwd-input').value=''; return;
+    }
+    changePwdStep=1;
+    document.getElementById('modal-sub').textContent='Ingresá la nueva contraseña';
+    document.getElementById('pwd-input').placeholder='nueva contraseña';
+    document.getElementById('pwd-input').value='';
+    document.getElementById('error-msg').classList.remove('visible');
+    document.getElementById('pwd-input').classList.remove('error');
+    document.getElementById('pwd-input').focus();
+  } else {
+    if(!val){ document.getElementById('error-msg').textContent='No puede estar vacía'; document.getElementById('error-msg').classList.add('visible'); return; }
+    EDIT_PASSWORD=val; localStorage.setItem('menu_pwd',val);
+    changePwdStep=0; changingPwd=false; closeModal();
+    document.getElementById('pwd-input').type='password';
+    document.getElementById('pwd-input').style.letterSpacing='4px';
+    document.getElementById('pwd-input').placeholder='••••••';
+    alert('✅ Contraseña cambiada correctamente.');
+  }
+}
+
+function enableEdit(){
+  document.querySelectorAll('.item-name,.item-price').forEach(el=>el.contentEditable='true');
+  document.getElementById('h-tagline').contentEditable='true';
+  document.getElementById('daily-text').contentEditable='true';
+}
+
+function enterEdit(){
+  editMode=true;
+  document.body.classList.add('editing');
+  document.getElementById('edit-bar-top').classList.add('visible');
+  document.getElementById('edit-fab').classList.add('active');
+  document.getElementById('fab-label').textContent='Guardar';
+  document.querySelectorAll('.section-body').forEach(b=>{
+    b.classList.remove('collapsed'); b.style.maxHeight='none';
+    const c=b.previousElementSibling.querySelector('.section-chevron');
+    if(c) c.classList.add('open');
+  });
+  enableEdit();
+}
+
+function exitEdit(){
+  editMode=false;
+  document.body.classList.remove('editing');
+  document.getElementById('edit-bar-top').classList.remove('visible');
+  document.getElementById('edit-fab').classList.remove('active');
+  document.getElementById('fab-label').textContent='Editar';
+  document.querySelectorAll('.item-name,.item-price').forEach(el=>el.contentEditable='false');
+  document.getElementById('h-tagline').contentEditable='false';
+  document.getElementById('daily-text').contentEditable='false';
+  saveData();
+  document.querySelectorAll('.section-body').forEach(b=>{ b.style.maxHeight=b.scrollHeight+'px'; });
+}
+
+renderMenu();
+</script>
+</body>
+</html>
